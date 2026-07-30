@@ -15,7 +15,7 @@
 
 <div align="center">
 
-Mori is a fast and simple downloader for saving videos, photos, and music from 14 popular social media apps. Everything works directly on your device without any external servers or tracking — giving you total privacy and zero ads.
+Mori is a fast and simple downloader for saving videos, photos, and music from 14 popular social media apps. It has no Mori-operated backend, build-time API key, or required `.env` file; supported-platform and extraction requests are made from the device to the public services configured in the scraper modules.
 
 </div>
 
@@ -34,6 +34,7 @@ Mori is a fast and simple downloader for saving videos, photos, and music from 1
 
 ## What's New in v4.1.0
 
+- **Quick Share Download Popup**: Android shares now open a dedicated SnapTube-inspired bottom sheet instead of the full app. It supports Video, Audio, Photos, available quality choices, saved automatic preferences, Wi-Fi-only rules, and persistent low-memory transfers through Android's system download service.
 - **Monotonic Floating Download Progress Toast & Zombie Timer Fix**: Refactored progress animation with strict monotonic state tracking (`updateProgress`) and global timer lifecycle management (`window._moriActiveSimInterval`), ensuring progress width never jumps or animates backwards during retries, errors, or subsequent download attempts.
 - **Clean Single-Percentage UI**: Eliminated redundant percentage text from download action buttons and progress toast status footers. Clean percentage numbers are shown exclusively in the top-right progress toast badge (`.dpt-percent`).
 - **Responsive Toast Error Formatting & Overflow Guard**: Sanitized long raw API URLs/tokens in error messages and added multi-line word-wrap CSS rules (`word-break: break-word; overflow-wrap: anywhere`) to prevent error text overflowing toast borders.
@@ -166,7 +167,7 @@ Mori/
 - **Live Media Previews**: View images, play videos, and listen to audio directly within the app before downloading.
 - **Standalone PDF Document Export**: Convert image galleries from any platform into high-quality PDF files for offline viewing.
 - **Private History Manager**: Downloaded files are managed internally with local playback support and offline badge detection.
-- **Share Intent Integration**: Send links directly to Mori from other apps via the system Share menu.
+- **Quick Share Intent Integration**: Send a link to Mori from another app and choose video, audio, photos, or quality in a compact Android popup. Optional saved preferences can queue future shares automatically.
 - **Auto Clipboard Paste**: Automatically detects and pastes links from clipboard when you return to the app.
 - **Auto Update Check**: Checks for new versions on startup via GitHub Releases and shows a popup modal when an update is available.
 - **Hardened Biometric Privacy Lock**: Secure your history and settings menu with native fingerprint, FaceID, or TouchID authentication, featuring automatic background re-locking.
@@ -177,30 +178,33 @@ Mori/
 
 ## How to Use
 
-1. Copy a link from a supported platform or Share it directly to Mori.
-2. Use the **Paste** button or let the auto-detection handle the link.
-3. Tap **Analyze** to verify the content.
-4. Preview the media (swipe through carousels if available).
-5. Choose your format and tap **Download**.
-6. Files are saved to your internal history for offline access.
+1. Share a supported link to Mori to open the quick popup.
+2. Choose Video, Audio, Photos, and an available quality, then tap **Download**.
+3. Optionally enable **Use this choice automatically next time**, or configure the default format and quality in Mori Settings.
+4. The popup can close after the job is queued; Android continues the transfer into the configured Downloads subfolder.
+5. For previews and the full analyzer, open Mori normally and paste the link.
 
 ## For Developers
 
 Mori is built using Capacitor and Vanilla JS for high performance.
 
-- **On Android & iOS**: Uses `CapacitorHttp` to bypass CORS and download directly from the device IP. Files are saved to local device storage and accessible via the **Files app** (`On My iPhone/Mori`) on iOS.
+- **On Android & iOS**: Uses `CapacitorHttp` for supported-platform analysis. Android quick-share transfers are handed to `DownloadManager`, while the full app and iOS retain their existing filesystem flow.
 - **On Web**: Preview mode only — runs directly in the browser with limited functionality.
+- **Runtime services**: No `.env` or private API key is required for this repository. The scraper modules use public third-party endpoints, so an upstream API or site change can still require a future scraper update.
 
 ### Building the APK
 
 ```bash
-# 1. Sync Capacitor with Android
+# 1. Run deterministic JavaScript tests
+npm test
+
+# 2. Sync Capacitor with Android
 npx cap sync android
 
-# 2. Build the debug APK
-cd android && ./gradlew assembleDebug
+# 3. Run Android unit tests and lint, then build the debug APK
+cd android && ./gradlew testDebugUnitTest lintDebug assembleDebug
 
-# 3. The APK is output at:
+# 4. The APK is output at:
 #    android/app/build/outputs/apk/debug/Mori v{VERSION}.apk
 ```
 

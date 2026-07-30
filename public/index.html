@@ -892,7 +892,7 @@
                   <label for="autoClearInputToggle"></label>
                 </div>
               </div>
-              <!-- Auto-Download Link -->
+              <!-- Auto-Download Shared Links -->
               <div class="settings-item">
                 <div class="item-label">
                   <svg
@@ -905,11 +905,118 @@
                       d="M13 11.33L18 18H6l5-6.67V4h2v7.33zM12 2c-1.1 0-2 .9-2 2v7.33L5 18c-.67.89-.03 2.15 1.1 2.15h11.8c1.13 0 1.77-1.26 1.1-2.15L14 11.33V4c0-1.1-.9-2-2-2z"
                     />
                   </svg>
-                  <span data-i18n="label-autodownload">Auto-Download Link</span>
+                  <span data-i18n="label-autodownload"
+                    >Auto-download shared links</span
+                  >
                 </div>
                 <div class="toggle-switch">
                   <input type="checkbox" id="autoDownloadToggle" />
                   <label for="autoDownloadToggle"></label>
+                </div>
+              </div>
+              <!-- Shared Link Download Type -->
+              <div class="settings-item">
+                <div class="item-label">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M8 5v14l11-7L8 5zm-3 0h2v14H5V5zm15 0h2v14h-2V5z"
+                    />
+                  </svg>
+                  <span data-i18n="label-share-format"
+                    >Shared-link format</span
+                  >
+                </div>
+                <div class="custom-select" id="shareActionSelect">
+                  <div class="selected-text" id="shareActionText">Video</div>
+                  <div class="dropdown-arrow">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                    >
+                      <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                  </div>
+                  <div class="dropdown-menu hidden" id="shareActionMenu">
+                    <div
+                      class="dropdown-item"
+                      data-value="video"
+                      data-i18n="share-format-video"
+                    >
+                      Video
+                    </div>
+                    <div
+                      class="dropdown-item"
+                      data-value="audio"
+                      data-i18n="share-format-audio"
+                    >
+                      Audio only
+                    </div>
+                    <div
+                      class="dropdown-item"
+                      data-value="images"
+                      data-i18n="share-format-images"
+                    >
+                      Photos
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Preferred Shared Video Quality -->
+              <div class="settings-item">
+                <div class="item-label">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-8-2h2v-4h4v-2h-4V7h-2v4H7v2h4v4z"
+                    />
+                  </svg>
+                  <span data-i18n="label-quality">Preferred quality</span>
+                </div>
+                <div class="custom-select" id="shareQualitySelect">
+                  <div class="selected-text" id="shareQualityText">
+                    Best available
+                  </div>
+                  <div class="dropdown-arrow">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                    >
+                      <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                  </div>
+                  <div class="dropdown-menu hidden" id="shareQualityMenu">
+                    <div
+                      class="dropdown-item"
+                      data-value="best"
+                      data-i18n="share-quality-best"
+                    >
+                      Best available
+                    </div>
+                    <div class="dropdown-item" data-value="1080">1080p</div>
+                    <div class="dropdown-item" data-value="720">720p</div>
+                    <div class="dropdown-item" data-value="480">480p</div>
+                    <div class="dropdown-item" data-value="360">360p</div>
+                    <div
+                      class="dropdown-item"
+                      data-value="lowest"
+                      data-i18n="share-quality-lowest"
+                    >
+                      Smallest file
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- Auto-Retry Download -->

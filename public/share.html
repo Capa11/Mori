@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#191814" />
+    <title>Download with Mori</title>
+    <link rel="stylesheet" href="css/share.css" />
+  </head>
+  <body>
+    <main class="share-overlay" aria-label="Mori quick download">
+      <section
+        class="share-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shareSheetTitle"
+      >
+        <div class="sheet-handle" aria-hidden="true"></div>
+
+        <header class="share-header">
+          <div class="brand-block">
+            <span class="brand-mark" aria-hidden="true">M</span>
+            <div>
+              <h1 id="shareSheetTitle">Download with Mori</h1>
+              <p>Quick download</p>
+            </div>
+          </div>
+          <button
+            id="shareCloseBtn"
+            class="icon-button"
+            type="button"
+            aria-label="Close quick download"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+
+        <div class="state-region" aria-live="polite" aria-atomic="true">
+          <section id="shareAnalyzing" class="status-state analyzing-state">
+            <div class="spinner" aria-hidden="true"></div>
+            <div>
+              <h2>Checking your link</h2>
+              <p>Finding the best available download options…</p>
+            </div>
+          </section>
+
+          <section id="shareError" class="status-state error-state" hidden>
+            <span class="state-symbol" aria-hidden="true">!</span>
+            <div class="state-copy">
+              <h2>Couldn’t prepare this link</h2>
+              <p id="shareErrorMessage">
+                Check the link or your connection, then try again.
+              </p>
+            </div>
+            <div class="state-actions">
+              <button
+                id="shareRetryBtn"
+                class="button button-primary button-compact"
+                type="button"
+              >
+                Retry
+              </button>
+              <button
+                id="shareOpenAppBtn"
+                class="button button-secondary button-compact"
+                type="button"
+              >
+                Open Mori
+              </button>
+            </div>
+          </section>
+
+          <section id="shareResult" class="result-state" hidden>
+            <article class="media-summary">
+              <img
+                id="shareThumbnail"
+                class="media-thumbnail"
+                alt=""
+                width="84"
+                height="84"
+              />
+              <div class="media-copy">
+                <h2 id="shareTitle">Shared media</h2>
+                <p id="shareSource">Preparing source…</p>
+              </div>
+            </article>
+
+            <div
+              id="shareModeTabs"
+              class="mode-tabs"
+              role="tablist"
+              aria-label="Download type"
+            >
+              <button
+                class="mode-tab is-active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                data-mode="video"
+              >
+                Video
+              </button>
+              <button
+                class="mode-tab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                data-mode="audio"
+              >
+                Audio
+              </button>
+              <button
+                class="mode-tab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                data-mode="photos"
+              >
+                Photos
+              </button>
+            </div>
+
+            <fieldset class="quality-fieldset">
+              <legend>Choose quality</legend>
+              <div
+                id="shareQualityList"
+                class="quality-list"
+                role="radiogroup"
+                aria-label="Available quality"
+              ></div>
+            </fieldset>
+
+            <div class="destination-row">
+              <span class="destination-icon" aria-hidden="true">↓</span>
+              <div>
+                <span class="detail-label">Save to</span>
+                <p id="shareDestination">Downloads / Mori</p>
+              </div>
+            </div>
+
+            <label class="remember-choice" for="shareRememberChoice">
+              <input id="shareRememberChoice" type="checkbox" />
+              <span class="custom-checkbox" aria-hidden="true"></span>
+              <span>Use this choice automatically next time</span>
+            </label>
+
+            <button
+              id="shareDownloadBtn"
+              class="button button-primary download-button"
+              type="button"
+            >
+              <span>Download</span>
+              <span class="button-arrow" aria-hidden="true">↓</span>
+            </button>
+          </section>
+
+          <section id="shareSuccess" class="status-state success-state" hidden>
+            <span class="state-symbol success-symbol" aria-hidden="true">✓</span>
+            <div class="state-copy">
+              <h2>Download queued</h2>
+              <p id="shareSuccessMessage">
+                Mori will finish the download in the background.
+              </p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/share.js"></script>
+  </body>
+</html>

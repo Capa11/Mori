@@ -19,4 +19,25 @@
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
     </style>
+
+    <style name="AppTheme.ShareOverlay" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.42</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Mori.ShareOverlay</item>
+    </style>
+
+    <style name="Animation.Mori.ShareOverlay" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/share_sheet_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/share_sheet_stay</item>
+        <item name="android:activityCloseEnterAnimation">@anim/share_sheet_stay</item>
+        <item name="android:activityCloseExitAnimation">@anim/share_sheet_exit</item>
+    </style>
 </resources>

@@ -54,6 +54,7 @@ import {
   renderScraperListContainer,
   checkAllScrapersHealth,
 } from "./utils/scraperHealth.js";
+import { consumeCompletedBackgroundDownloads } from "./backgroundDownloads.mjs";
 
 const APP_VERSION = "4.1.0";
 const GITHUB_REPO = "coflyn/Mori";
@@ -466,7 +467,11 @@ function setupCustomSelect(selectId, storageKey, textId, menuId) {
   if (!select || !text || !menu) return;
 
   const defaultFallback =
-    storageKey === "mori_prefer_server" ? "ask" : "default";
+    {
+      mori_prefer_server: "ask",
+      mori_share_action: "video",
+      mori_share_quality: "best",
+    }[storageKey] || "default";
   const currentVal = localStorage.getItem(storageKey) || defaultFallback;
 
   // Update display on load
@@ -537,6 +542,18 @@ setupCustomSelect(
   "mori_filename",
   "filenameText",
   "filenameMenu",
+);
+setupCustomSelect(
+  "shareActionSelect",
+  "mori_share_action",
+  "shareActionText",
+  "shareActionMenu",
+);
+setupCustomSelect(
+  "shareQualitySelect",
+  "mori_share_quality",
+  "shareQualityText",
+  "shareQualityMenu",
 );
 setupCustomSelect(
   "colorAccentSelect",
@@ -1098,6 +1115,23 @@ function updateCustomSelectsUI() {
     filenameText.textContent =
       lang[`filename-${currentFilename}`] || currentFilename;
 
+  const currentShareAction =
+    localStorage.getItem("mori_share_action") || "video";
+  const shareActionText = document.getElementById("shareActionText");
+  if (shareActionText)
+    shareActionText.textContent =
+      lang[`share-format-${currentShareAction}`] || currentShareAction;
+
+  const currentShareQuality =
+    localStorage.getItem("mori_share_quality") || "best";
+  const shareQualityText = document.getElementById("shareQualityText");
+  if (shareQualityText)
+    shareQualityText.textContent =
+      lang[`share-quality-${currentShareQuality}`] ||
+      (/^\d+$/.test(currentShareQuality)
+        ? `${currentShareQuality}p`
+        : currentShareQuality);
+
   const currentUA = localStorage.getItem("mori_user_agent") || "default";
   const userAgentText = document.getElementById("userAgentText");
   if (userAgentText)
@@ -1327,9 +1361,9 @@ async function handlePasteFromClipboard(isSilent = false) {
         }
 
         if (isSilent) {
-          const autoDownload =
-            localStorage.getItem("mori_auto_download") === "true";
-          if (autoDownload) {
+          const autoAnalyze =
+            localStorage.getItem("mori_auto_analyze") === "true";
+          if (autoAnalyze) {
             // Wi-Fi check for auto-download
             const isWifiOnly =
               localStorage.getItem("mori_wifi_only") === "true";
@@ -2296,37 +2330,41 @@ async function onHistoryDeleteClick(url) {
 
 // Global Event for File Saved (Syncing UI and History)
 window.addEventListener("mori_file_saved", async (e) => {
-  const { url, path, uri } = e.detail;
+  const { url, path, uri, kind } = e.detail;
   const target = cleanUrl(url);
   let history = JSON.parse(localStorage.getItem("mori_history") || "[]");
 
-  const isVideo = path.toLowerCase().endsWith(".mp4");
-  const isAudio = path.toLowerCase().endsWith(".mp3");
-  const isImage = /\.(jpg|jpeg|png|webp)/i.test(path);
+  const lowerPath = path.toLowerCase();
+  const isVideo =
+    kind === "video" || /\.(mp4|mkv|mov|webm)$/i.test(lowerPath);
+  const isAudio =
+    kind === "audio" ||
+    /\.(mp3|m4a|aac|opus|ogg|oga|wav|flac)$/i.test(lowerPath);
+  const isImage =
+    kind === "image" || /\.(jpg|jpeg|png|webp|gif)$/i.test(lowerPath);
   const fileUri = uri || path;
 
   let matched = false;
-  history = history.map((item, index) => {
+  history = history.map((item) => {
     const itemClean = cleanUrl(item.url);
     const sourceClean = item.sourceUrl ? cleanUrl(item.sourceUrl) : "";
     const isUrlMatch =
-      itemClean === target ||
-      (sourceClean && sourceClean === target) ||
-      (item.url && item.url.includes(url)) ||
-      (url && url.includes(item.url));
+      itemClean === target || (sourceClean && sourceClean === target);
 
-    if (
-      !matched &&
-      (isUrlMatch ||
-        (index === 0 && (!item.localFiles || item.localFiles.length === 0)))
-    ) {
+    if (!matched && isUrlMatch) {
       matched = true;
       const localFiles = item.localFiles || [];
       if (!localFiles.find((f) => f.path === path)) {
         localFiles.push({
           path,
           uri: fileUri,
-          type: isVideo ? "VIDEO" : isAudio ? "MP3" : "IMAGE",
+          type: isVideo
+            ? "VIDEO"
+            : isAudio
+              ? "AUDIO"
+              : isImage
+                ? "IMAGE"
+                : "FILE",
           thumbnail: null,
         });
       }
@@ -2723,16 +2761,6 @@ document.addEventListener(
   { passive: true },
 );
 
-// Initial Auto-Download Check
-setTimeout(() => {
-  const autoDownload = localStorage.getItem("mori_auto_download") === "true";
-  if (autoDownload) {
-    if (typeof handlePasteFromClipboard === "function") {
-      handlePasteFromClipboard(true);
-    }
-  }
-}, 2000);
-
 // Hardware Back Button Handler for Mobile
 let lastBackPressTime = 0;
 if (window.Capacitor?.isNativePlatform() && App) {
@@ -2769,5 +2797,56 @@ if (window.Capacitor?.isNativePlatform() && App) {
       const lang = translations[currentLang] || translations.en;
       showToast(lang["toast-press-back-exit"] || "Press back again to exit");
     }
+  });
+}
+
+let isReconcilingBackgroundDownloads = false;
+
+async function reconcileBackgroundDownloads() {
+  if (isReconcilingBackgroundDownloads) return;
+  isReconcilingBackgroundDownloads = true;
+  try {
+    const completed = await consumeCompletedBackgroundDownloads();
+    completed.downloads.forEach((download) => {
+      if (download?.incognito || !download?.sourceUrl || !download?.path) return;
+      window.dispatchEvent(
+        new CustomEvent("mori_file_saved", {
+          detail: {
+            url: download.sourceUrl,
+            path: download.path,
+            uri: download.uri || download.path,
+            kind: download.kind || null,
+          },
+        }),
+      );
+    });
+    if (completed.failures.length) {
+      const lang = translations[currentLang] || translations.en;
+      showToast(
+        `${completed.failures.length} ${
+          lang["label-download"] || "download"
+        }${completed.failures.length === 1 ? "" : "s"} failed in the background.`,
+      );
+    }
+  } catch (error) {
+    console.warn("Unable to reconcile background downloads:", error);
+  } finally {
+    isReconcilingBackgroundDownloads = false;
+  }
+}
+
+if (window.Capacitor?.getPlatform() === "android") {
+  window.setTimeout(reconcileBackgroundDownloads, 800);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      reconcileBackgroundDownloads();
+    }
+  });
+  window.addEventListener(
+    "moriBackgroundDownloadComplete",
+    reconcileBackgroundDownloads,
+  );
+  App?.addListener("appStateChange", ({ isActive }) => {
+    if (isActive) reconcileBackgroundDownloads();
   });
 }

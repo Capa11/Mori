@@ -66,6 +66,10 @@ export function cleanUrl(url) {
         u.search = "";
         u.searchParams.set("v", v);
       }
+    } else if (u.hostname.includes("pixiv.net") && u.searchParams.has("illust_id")) {
+      const illustrationId = u.searchParams.get("illust_id");
+      u.search = "";
+      if (illustrationId) u.searchParams.set("illust_id", illustrationId);
     } else if (!u.hostname.includes("facebook.com")) {
       if (!u.searchParams.has("id") && !u.searchParams.has("story_fbid")) {
         u.search = "";

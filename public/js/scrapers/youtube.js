@@ -6,7 +6,7 @@ export function setYouTubeSource(src) {
   _ytSource = src;
 }
 
-export async function scrapeYouTube(url) {
+export async function scrapeYouTube(url, options = {}) {
   let currentStatus = null;
   try {
     const videoId = url.match(
@@ -96,14 +96,31 @@ export async function scrapeYouTube(url) {
           return null;
         }
       };
-      const tiers = ["1080p", "720p", "480p", "360p"];
+      const supportedTiers = ["1080p", "720p", "480p", "360p"];
+      const requestedFormats = Array.isArray(options.formats)
+        ? options.formats.filter((format) => ["mp3", "mp4"].includes(format))
+        : ["mp3", "mp4"];
+      const requestedTiers = Array.isArray(options.qualities)
+        ? options.qualities.filter((quality) =>
+            supportedTiers.includes(quality),
+          )
+        : supportedTiers;
+      const tiers = requestedTiers.length ? requestedTiers : supportedTiers;
+      const includeAudio = requestedFormats.includes("mp3");
+      const includeVideo = requestedFormats.includes("mp4");
       const [mp3, ...mp4s] = await Promise.all([
-        runConvert("mp3", ""),
-        ...tiers.map((q) => runConvert("mp4", q)),
+        includeAudio ? runConvert("mp3", "") : Promise.resolve(null),
+        ...(includeVideo
+          ? tiers.map((quality) => runConvert("mp4", quality))
+          : []),
       ]);
       const downloads = [];
       mp4s.forEach((r, i) => {
-        if (r) downloads.push({ type: `MP4 ${tiers[i]}`, url: r.url });
+        if (r)
+          downloads.push({
+            type: `MP4 ${r.quality || tiers[i]}`,
+            url: r.url,
+          });
       });
       if (mp3) downloads.push({ type: "MP3", url: mp3.url });
       if (!downloads.length)
@@ -156,9 +173,16 @@ export async function scrapeYouTube(url) {
           dlUrl = "https://ytmp3.mobi" + dlUrl;
         return dlUrl;
       };
+      const requestedFormats = Array.isArray(options.formats)
+        ? options.formats.filter((format) => ["mp3", "mp4"].includes(format))
+        : ["mp3", "mp4"];
       const [mp4Url, mp3Url] = await Promise.all([
-        fetchSingle("mp4"),
-        fetchSingle("mp3"),
+        requestedFormats.includes("mp4")
+          ? fetchSingle("mp4")
+          : Promise.resolve(null),
+        requestedFormats.includes("mp3")
+          ? fetchSingle("mp3")
+          : Promise.resolve(null),
       ]);
       const downloads = [];
       if (mp4Url) downloads.push({ type: "MP4", url: mp4Url });
